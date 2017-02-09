@@ -1,0 +1,29 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans.xsd
+             http://www.springframework.org/schema/context
+			 http://www.springframework.org/schema/context/spring-context-4.3.xsd
+             http://www.springframework.org/schema/integration
+             http://www.springframework.org/schema/integration/spring-integration-4.3.xsd
+             http://www.springframework.org/schema/integration/stream
+             http://www.springframework.org/schema/integration/stream/spring-integration-stream-4.3.xsd"
+>
+    <context:component-scan base-package="edu.hanoi.message"/>
+    <int:channel id="helloChannel"/>
+    <int:service-activator
+        input-channel="helloChannel"
+        ref="helloService" method="say"
+        output-channel="nullChannel"/>
+
+    <int:channel id="stdoutChannel"/>
+    <int-stream:stdout-channel-adapter
+        channel="stdoutChannel" append-newline="true"/>
+    <int:service-activator
+            input-channel="helloChannel"
+            ref="helloService" method="say"
+            output-channel="stdoutChannel"/>
+</beans>

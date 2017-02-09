@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:stream="http://www.springframework.org/schema/integration/stream"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+        http://www.springframework.org/schema/integration/stream
+		http://www.springframework.org/schema/integration/stream/spring-integration-stream-1.0.xsd"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:task="http://www.springframework.org/schema/task">
+
+    <gateway id="orderService"
+             service-interface="test.OrderService"
+             default-request-channel="orderCreateChannel"
+             default-reply-timeout="3000">
+        <method name="sameCreateOrder"/>
+    </gateway>
+    <channel id="orderCreateChannel"/>
+    <service-activator input-channel="orderCreateChannel" method="createNewOrder">
+        <beans:bean class="test.OderServiceImpl"/>
+
+    </service-activator>
+
+    <!-- Channel -->
+
+    <channel id="helloChannel">
+
+    </channel>
+
+    <service-activator input-channel="helloChannel" method="say" output-channel="stdoutChannel">
+        <beans:bean class="test.HelloService"/>
+    </service-activator>
+
+    <task:executor id="executor" pool-size="10"/>
+
+    <channel id="stdoutChannel"/>
+    <stream:stdout-channel-adapter channel="stdoutChannel" append-newline="true"/>
+
+    <!-- GateWay -->
+    <gateway id="userService"
+             service-interface="test.gateway.UserService">
+        <method name="query" request-channel="userRequestChannel"
+                reply-timeout="1000"/>
+        <method name="loadGroup" request-channel="groupRequestChannel"
+                reply-channel="groupOutChannel" reply-timeout="6000"/>
+    </gateway>
+
+    <channel id="userRequestChannel"/>
+    <service-activator input-channel="userRequestChannel" method="query">
+        <beans:bean class="test.gateway.UserDaoImpl"/>
+    </service-activator>
+
+    <channel id="groupRequestChannel">
+        <dispatcher task-executor="myExecutor"/>
+    </channel>
+    <service-activator input-channel="groupRequestChannel" method="loadGroup">
+        <beans:bean class="test.gateway.GroupDaoImpl"/>
+    </service-activator>
+
+    <channel id="groupOutChannel"/>
+    <service-activator input-channel="groupOutChannel" method="processGroupList">
+        <beans:bean class="test.gateway.GroupOutEndpoint"/>
+    </service-activator>
+
+    <task:executor id="myExecutor"/>
+</beans:beans>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HN Spring WebSocket</title>
+    <script src="/js/sockjs-1.1.1.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+    <script type="text/javascript">
+
+var stompClient = null;
+
+function disconnect() {
+    if (stompClient != null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected stomp client...");
+    enableChatbox(false);
+}
+
+function connect() {
+    var socket = new SockJS('/message');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/chat', function(message){
+            var text = JSON.parse(message.body).content;
+            showMessage(text);
+        });
+    });
+    enableChatbox(true);
+}
+
+function showMessage(text) {
+    var response = document.getElementById('response');
+    var p = document.createElement('p');
+    p.appendChild(document.createTextNode(text));
+    response.appendChild(p);
+}
+
+function send() {
+    var text = document.getElementById('message').value;
+    console.log("Sending... " + text);
+    stompClient.send("/app/message", {}, JSON.stringify({'content': text}));
+}
+
+function enableChatbox(connected) {
+    document.getElementById('connect').disabled = connected;
+    document.getElementById('disconnect').disabled = !connected;
+    if (connected)
+        document.getElementById('conversationDiv').style.visibility = 'visible';
+    else
+        document.getElementById('conversationDiv').style.visibility = 'hidden';
+}
+    </script>
+</head>
+<body onload="disconnect()">
+    <h2> Welcome to HN Chat Box</h2>
+    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" onclick="disconnect();">Disconnect</button>
+    </div>
+    <div id="conversationDiv">
+        <label>Message: </label> <input type="text" id="message"/>
+        <button id="send" onclick="send();">Send</button>
+        <p id="response"></p>
+    </div>
+</body>
+
+</html>
