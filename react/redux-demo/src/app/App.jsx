@@ -7,7 +7,7 @@ import TodoList from './components/TodoList.jsx'
 
 class App extends Component {
     render() {
-        const { dispatch, visibleTodos } = this.props
+        const { dispatch, visibleTodos } = this.props;
 
         return (
             <div>
