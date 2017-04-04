@@ -4,7 +4,7 @@ import Link from "./Link";
 const Footer = () => (
     <p>
         Show: {' '}
-        <Link active={true} >
+        <Link active={true}>
             All
         </Link> {', '}
 
