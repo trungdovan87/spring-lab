@@ -4,11 +4,13 @@
 import React from 'react';
 import AddTodo from './AddTodo';
 import Footer from './Footer'
+import TodoList from './TodoList'
 
 const App = () => (
     <div>
         <h1>Kaka</h1>
         <AddTodo/>
+        <TodoList/>
         <Footer/>
     </div>
 );

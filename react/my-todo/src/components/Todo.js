@@ -17,7 +17,7 @@ const Todo = ({onClick, completed, text}) => (
 );
 
 Todo.propTypes = {
-    completed: React.PropTypes.bool.required,
+    completed: React.PropTypes.bool.isRequired,
     text: React.PropTypes.string.isRequired,
     onClick: React.PropTypes.func
 };
