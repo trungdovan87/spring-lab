@@ -2,7 +2,7 @@ import {connect} from "react-redux";
 import {addTodo} from "../actions";
 import AddTodoView from "../components/AddTodoView"
 
-// const mapDispatchToProps = (dispatch, props) => ({
+// const mapDispatchToProps = (dispatch, ownProps) => ({
 //     onAddTodo: input => {
 //         dispatch(addTodo(input));
 //     }

@@ -8,7 +8,6 @@ const TodoList = ({todos, onTodoClick}) => (
                 <Todo key={todo.id} completed={todo.completed} text={todo.text} onClick={() => onTodoClick(todo.id)}/>
             )
         }
-
     </ul>
 );
 

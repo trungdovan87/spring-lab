@@ -6,6 +6,13 @@ export const TYPE = {
     TOGGLE_TODO: 'TOGGLE_TODO'
 };
 
+export const FILTER = {
+    SHOW_ALL: 'SHOW_ALL',
+    SHOW_ACTIVE: 'SHOW_ACTIVE',
+    SHOW_COMPLETED: 'SHOW_COMPLETED'
+};
+
+
 export const addTodo = (text) => ({
     type: TYPE.ADD_TODO,
     id: nextTodoId++,

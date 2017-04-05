@@ -1,10 +1,19 @@
 import {connect} from "react-redux";
 import TodoList from "../components/TodoList";
-import {toggleTodo} from "../actions";
+import {toggleTodo, FILTER} from "../actions";
 
 const getVisibleTodos = (todos, filter) => {
-    return todos;
-}
+    switch (filter) {
+        case FILTER.SHOW_ALL:
+            return todos;
+        case FILTER.SHOW_COMPLETED:
+            return todos.filter(t => t.completed);
+        case FILTER.SHOW_ACTIVE:
+            return todos.filter(t => !t.completed);
+        default:
+            throw new Error('Unknown filter: ' + filter);
+    }
+};
 const mapStateToProps = (state) => ({
     todos: getVisibleTodos(state.todos, state.visibilityFilter)
 });

@@ -8,8 +8,7 @@ const Link = ({active, children, onClick}) => {
             <a href='http://24h.com.vn'
                onClick={e => {
                    e.preventDefault();
-                   alert("hehe");
-
+                   onClick();
                }}
             >
                 {children}
