@@ -16,7 +16,7 @@ const AddTodoView = ({onAddTodo}) => {
             </button>
         </div>
     );
-}
+};
 
 AddTodoView.propTypes = {
     onAddTodo: PropTypes.func.isRequired

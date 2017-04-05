@@ -5,4 +5,8 @@ const todoApp = combineReducers({
     todos
 });
 
+// const todoApp = (state, action) => {
+//     return {...state, todos : todos(state, action)}
+// }
+
 export default todoApp;

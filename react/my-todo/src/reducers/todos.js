@@ -1,17 +1,20 @@
-import {TYPE} from '../actions'
+import {TYPE} from "../actions";
 
-let todo = (state, action) => {
-    switch (action.type) {
-        case TYPE.ADD_TODO:
-            return {
-                id: action.id,
-                text: action.text,
-                completed: false
-            }
-        default:
-            return state;
-    }
-}
+let addTodo = (todos, action) => ([ ...todos, {
+    id: action.id,
+    text: action.text,
+    completed: false
+}]);
+
+let toggle = (stateTodos, action) => {
+  let result = [...stateTodos];
+  for (let todo of result) {
+      if (todo.id === action.id) {
+          todo.completed = !todo.completed;
+      }
+  }
+  return result;
+};
 
 const todos = (state = [], action) => {
     console.log("state, action: ");
@@ -19,12 +22,11 @@ const todos = (state = [], action) => {
     console.log(action);
     switch (action.type) {
         case TYPE.ADD_TODO:
-            return [
-                ...state,
-                todo(undefined, action)
-            ];
+            return addTodo(state, action);
+        case TYPE.TOGGLE_TODO:
+            return toggle(state, action);
         default:
-            return false;
+            return state;
     }
 };
 
