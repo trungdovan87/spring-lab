@@ -1,22 +1,21 @@
 import React, {PropTypes} from "react";
 
-class AddTodoView extends React.Component {
-    // input = undefined;
-    render() {
-        return (
-            <div>
-                <input ref={(node) => this.input = node}/>
-                <button type="submit" onClick={e => {
-                    e.preventDefault();
-                    console.log("submit props:");
-                    console.log(this.props);
-                    this.props.onAddTodo(this.input);
-                }}>
-                    Add To-do
-                </button>
-            </div>
-        );
-    }
+const AddTodoView = ({onAddTodo}) => {
+    let input = '';
+    return (
+        <div>
+            <input ref={(node) => input = node}/>
+            <button onClick={e => {
+                e.preventDefault();
+                if (!input.value.trim())
+                    return;
+                onAddTodo(input.value);
+                input.value = '';
+            }}>
+                Add To-do
+            </button>
+        </div>
+    );
 }
 
 AddTodoView.propTypes = {

@@ -1,32 +1,18 @@
-import React from "react";
-import { connect } from 'react-redux'
-import { addTodo } from '../actions'
+import {connect} from "react-redux";
+import {addTodo} from "../actions";
+import AddTodoView from "../components/AddTodoView"
 
-class AddTodoContainer extends React.Component {
+// const mapDispatchToProps = (dispatch, props) => ({
+//     onAddTodo: input => {
+//         dispatch(addTodo(input));
+//     }
+// });
 
-    handleSubmit = e => {
-        e.preventDefault();
-        if (!this.input.value.trim())
-            return;
-        alert("add Todo: " + this.input.value);
-        console.log("props: ");
-        console.log(this.props);
-        this.props.dispatch(addTodo(this.input.value));
-        this.input.value = '';
-    };
+const mapDispatchToProps = {
+    onAddTodo: addTodo
+};
 
-    render() {
-        return (
-            <div>
-                <input ref={(node) => this.input = node}/>
-                <button type="submit" onClick={this.handleSubmit}>
-                    Add To-do
-                </button>
-            </div>
-        );
-    }
-}
 
-AddTodoContainer = connect()(AddTodoContainer);
+const AddTodoContainer = connect(undefined, mapDispatchToProps)(AddTodoView);
 
 export default AddTodoContainer;
