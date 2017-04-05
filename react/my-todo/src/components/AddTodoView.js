@@ -1,7 +1,7 @@
 import React, {PropTypes} from "react";
 
 const AddTodoView = ({onAddTodo}) => {
-    let input = '';
+    let input;
     return (
         <div>
             <input ref={(node) => input = node}/>
