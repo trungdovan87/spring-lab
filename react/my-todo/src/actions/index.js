@@ -19,6 +19,13 @@ export const addTodo = (text) => ({
     text
 });
 
+export const addTodoAsync = (text) =>
+    (dispatch, getState) => {        
+        setTimeout( 
+            () => dispatch(addTodo(text))
+            , 2000);        
+    }
+
 export const  setVisibilityFilter = (filter) => ({
     type: TYPE.SET_VISIBILITY_FILTER,
     filter
