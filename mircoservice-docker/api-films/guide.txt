@@ -1,0 +1,13 @@
+- Link: https://medium.com/@hudsonmendes/docker-spring-boot-microservice-with-gradle-9785087e7992
+- run spring boot in Docker:
+sudo docker run \
+  --name="belfastjug-sample-01-A" \
+  --publish 9001:8080 \
+  --network="bridge" \
+  -e "spring.data.mongodb.host=$(ifconfig wlp8s0 | awk '/ *inet /{print $2}')" \
+  -e "spring.data.mongodb.port=27018" \
+  -e "spring.data.mongodb.database=visitors" \
+  trung-test:latest
+
+
+
