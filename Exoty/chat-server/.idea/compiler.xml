@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Annotation profile for server" enabled="true">
+        <sourceOutputDir name="../../Downloads/SmartFoxServer_2X/SFS2X/extensions/chat/generated-sources/annotations" />
+        <sourceTestOutputDir name="../../Downloads/SmartFoxServer_2X/SFS2X/extensions/chat/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="chat-server" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="chat-server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
