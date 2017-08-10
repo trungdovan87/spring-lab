@@ -70,15 +70,14 @@ public class JavaSimpleConnector implements IEventListener {
             case SFSEvent.CONNECTION:
                 boolean success = (Boolean) evt.getArguments().get("success");
 
-                if (!success) {
-                    log.warn("Connection failed!");
-                    return;
-                }
-                //log.info("Connection success: " + sfs.getConnectionMode());
+                if (!success)
+                    System.err.println("Connection failed!");
+                else
+                    System.err.println("Connection success!");
                 break;
             case SFSEvent.CONNECTION_LOST:
                 //log.info("Connection was closed");
-                System.out.println("Disconnect!!! please, type: /connect to reconnect...");
+                System.err.println("Disconnect!!! please, type: /connect to reconnect...");
                 break;
             case SFSEvent.LOGIN:
                 //log.info("Logged in as: " + sfs.getMySelf().getName());
@@ -104,6 +103,8 @@ public class JavaSimpleConnector implements IEventListener {
                 String cmd = (String) args.get("cmd");
                 ISFSObject p = (ISFSObject) args.get("params");
                 processExtensionResponse(cmd, p);
+                break;
+            default:
                 break;
         }
     }
@@ -140,8 +141,10 @@ public class JavaSimpleConnector implements IEventListener {
 
     private void historyChat(ISFSObject params) {
         int size = params.getInt("size");
-        if (size == 0)
+        if (size == 0) {
             System.err.println("--- NO chat in history!!!");
+            return;
+        }
 
         System.err.println("--- History Chat:");
         IntStream.range(0, size).forEach(i -> {

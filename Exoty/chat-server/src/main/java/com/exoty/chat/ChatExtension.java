@@ -24,11 +24,9 @@ import java.util.stream.Collectors;
 
 public class ChatExtension extends SFSExtension {
 
-    public static final String[] BAD_WORDS = {
+    private static final String[] BAD_WORDS = {
             "fuck", "bitch", "cock", "dick", "shit", "dm", "vkl",
     };
-    private List<User> allUsers;
-    private ConcurrentLinkedDeque<HistoryChat> history;
 
     public static final String filterChat(String s) {
         Objects.requireNonNull(s);
@@ -38,8 +36,12 @@ public class ChatExtension extends SFSExtension {
         return s;
     }
 
+    private List<User> allUsers;
+    private ConcurrentLinkedDeque<HistoryChat> history;
+
+
     public void init() {
-        trace("Init Chat Extension");
+        trace("===== Init Chat Extension =====");
         allUsers = Collections.synchronizedList(new ArrayList<>());
         history = new ConcurrentLinkedDeque<>();
 

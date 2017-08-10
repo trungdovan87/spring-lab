@@ -26,8 +26,11 @@ public class App {
         connector.login(username, password);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         connector.connect();
+
+        Thread.sleep(1000l);
+
         System.out.println("type '/h' for help");
 
         login();
