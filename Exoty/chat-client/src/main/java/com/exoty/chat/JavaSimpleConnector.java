@@ -23,6 +23,7 @@ import sfs2x.client.util.ConfigData;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Basic SFS2X client, performing connection and login to a 'localhost' server
@@ -131,10 +132,27 @@ public class JavaSimpleConnector implements IEventListener {
                 params.getUtfStringArray("users").stream().forEach(System.out::println);
                 System.out.println("------");
                 break;
+            case "history-chat":
+                historyChat(params);
+                break;
             default:
                 System.out.println("Receive msg with UNKNOWN cmd = " + cmd);
                 break;
         }
+    }
+
+    private void historyChat(ISFSObject params) {
+        int size = params.getInt("size");
+        if (size == 0)
+            System.err.println("--- NO chat in history!!!");
+
+        System.err.println("--- History Chat:");
+        IntStream.range(0, size).forEach(i -> {
+            String from = params.getUtfString("from" + i);
+            String msg = params.getUtfString("msg" + i);
+            System.err.println(String.format("from '%s' [history]: %s", from, msg));
+
+        });
     }
 
     public void connect() {

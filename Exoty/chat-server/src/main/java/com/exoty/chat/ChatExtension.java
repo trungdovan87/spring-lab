@@ -4,17 +4,14 @@ import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.entities.data.*;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
 public class ChatExtension extends SFSExtension {
@@ -33,28 +30,57 @@ public class ChatExtension extends SFSExtension {
 
     private List<User> users;
 
+    private ConcurrentLinkedDeque<HistoryChat> history;
+
     public void init() {
         trace("Init Chat Extension");
 //        addEventHandler(SFSEventType.USER_JOIN_ZONE, ZoneEventHandler.class);
-        users = new ArrayList<>();
-        addEventHandler(SFSEventType.USER_JOIN_ZONE, new ZoneEventHandler());
-        addEventHandler(SFSEventType.USER_DISCONNECT, new ZoneEventHandler());
+        users = Collections.synchronizedList(new ArrayList<>());
+        history = new ConcurrentLinkedDeque<>();
+
+        ZoneEventHandler zoneEventHandler = new ZoneEventHandler();
+        addEventHandler(SFSEventType.USER_JOIN_ZONE, zoneEventHandler);
+        addEventHandler(SFSEventType.USER_DISCONNECT, zoneEventHandler);
+        addEventHandler(SFSEventType.USER_LOGOUT, zoneEventHandler);
+        addEventHandler(SFSEventType.USER_LOGIN, zoneEventHandler);
+
         addRequestHandler("chat-to", new ChatReqHandler());
         addRequestHandler("chat-private-to", new ChatPrivateHandler());
         addRequestHandler("user-list", new UserListReqHandler());
+    }
+
+    private void addChatHistory(String from, String msg) {
+        history.addLast(new HistoryChat(from, msg));
+        if (history.size() > 100) {
+            history.removeFirst();
+        }
+    }
+
+    private void sendHistoryChat(User user) {
+        ISFSObject cmd = new SFSObject();
+        cmd.putInt("size", history.size());
+        int i = 0;
+        for (HistoryChat chat : history) {
+            cmd.putUtfString("from" + i, chat.getFrom());
+            cmd.putUtfString("msg" + i, chat.getMsg());
+            i++;
+        }
+
+        send("history-chat", cmd, user);
     }
 
 
     public class ChatReqHandler extends BaseClientRequestHandler {
         @Override
         public void handleClientRequest(User sender, ISFSObject params) {
-            String msg = params.getUtfString("msg");
+            String msg = filterChat(params.getUtfString("msg"));
+            trace("request: ", "{ chat: ", msg, "}");
+            addChatHistory(sender.getName(), msg);
 
             ISFSObject cmd = new SFSObject();
-            cmd.putUtfString("msg", filterChat(msg));
+            cmd.putUtfString("msg", msg);
             cmd.putUtfString("from", sender.getName());
 
-            trace("request: ", "{ chat: ", msg, "}");
             send("chat-from", cmd, users);
         }
     }
@@ -94,9 +120,6 @@ public class ChatExtension extends SFSExtension {
 
 
     public class ZoneEventHandler extends BaseServerEventHandler {
-        public ZoneEventHandler() {
-            super();
-        }
 
         @Override
         public void handleServerEvent(ISFSEvent event) throws SFSException {
@@ -105,7 +128,14 @@ public class ChatExtension extends SFSExtension {
             switch (event.getType()) {
                 case USER_JOIN_ZONE:
                     users.add(user);
-                    trace("Welcome new user: " + user.getName());
+                    trace("Welcome new user JOIN_ZONE: " + user.getName());
+                    sendHistoryChat(user);
+//                    sendHistoryChat(user);
+                    break;
+                case USER_LOGIN:
+                    users.add(user);
+                    trace("Welcome new user LOGIN: " + user.getName());
+
                     break;
 
                 case USER_LOGOUT:
