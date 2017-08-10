@@ -56,6 +56,15 @@ public class App
                     String msg = scanner.nextLine();
                     connector.sendMsg(msg);
                     break;
+
+                case "/chat-to":
+                    System.out.print("send to username: ");
+                    username = scanner.nextLine();
+                    System.out.print("type msg        : ");
+                    msg = scanner.nextLine();
+                    connector.sendPrivateMsg(username, msg);
+                    break;
+
                 case "/create-room":
                     System.out.print("type room name: ");
                     String name = scanner.nextLine();
@@ -91,11 +100,17 @@ public class App
         System.err.println("/h : help");
         System.err.println("/connect : connect");
         System.err.println("/disconnect : disconnect");
+        System.err.println("/login : login");
+        System.err.println("/logout : logout");
+        System.err.println("/chat : send msg");
+        System.err.println("/chat-to : send Private msg");
+
+        System.err.println();
+        System.err.println("/-------");
         System.err.println("/list-room");
         System.err.println("/create-room");
         System.err.println("/join-room");
-        System.err.println("/login : login");
-        System.err.println("/chat : send msg");
+
         System.err.println("/quit");
     }
 }

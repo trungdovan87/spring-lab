@@ -25,19 +25,17 @@ import java.util.Map;
 /**
  * Basic SFS2X client, performing connection and login to a 'localhost' server
  */
-public class JavaSimpleConnector implements IEventListener
-{
+public class JavaSimpleConnector implements IEventListener {
     public SmartFox getSfs() {
         return sfs;
     }
 
     private final SmartFox sfs;
     private final ConfigData cfg;
-    
+
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public JavaSimpleConnector() 
-    {
+    public JavaSimpleConnector() {
         /**
          * Setup the main API object and add all the events we
          * want to listen to.
@@ -52,7 +50,7 @@ public class JavaSimpleConnector implements IEventListener
         sfs.addEventListener(SFSEvent.ROOM_JOIN_ERROR, this);
         sfs.addEventListener(SFSEvent.EXTENSION_RESPONSE, this);
         sfs.addEventListener("test", this);
-        
+
         /**
          * Create a configuration for the connection passing
          * the basic parameters such as host, TCP port number and Zone name
@@ -63,7 +61,6 @@ public class JavaSimpleConnector implements IEventListener
         cfg.setPort(9933);
         cfg.setZone("Chat");
     }
-
 
 
     /**
@@ -83,6 +80,7 @@ public class JavaSimpleConnector implements IEventListener
                 break;
             case SFSEvent.CONNECTION_LOST:
                 //log.info("Connection was closed");
+                System.out.println("Disconnect!!! please, type: /connect to reconnect...");
                 break;
             case SFSEvent.LOGIN:
                 //log.info("Logged in as: " + sfs.getMySelf().getName());
@@ -113,11 +111,18 @@ public class JavaSimpleConnector implements IEventListener
     private void processExtensionResponse(String cmd, ISFSObject params) {
         switch (cmd) {
             case "chat-from":
-                String msg =params.getUtfString("msg");
+                String msg = params.getUtfString("msg");
                 String from = params.getUtfString("from");
                 if (!from.equals(sfs.getMySelf().getName()))
                     System.out.println(String.format("from '%s': %s", from, msg));
                 break;
+            case "chat-private-from":
+                msg = params.getUtfString("msg");
+                from = params.getUtfString("from");
+                System.out.println(String.format("from '%s' [private]: %s", from, msg));
+                break;
+            default:
+                System.out.println("Receive msg with UNKNOWN cmd = " + cmd);
         }
     }
 
@@ -147,6 +152,12 @@ public class JavaSimpleConnector implements IEventListener
         sfs.send(new ExtensionRequest("chat-to", params));
     }
 
+    public void sendPrivateMsg(String username, String msg) {
+        SFSObject params = new SFSObject();
+        params.putUtfString("to", username);
+        params.putUtfString("msg", msg);
+        sfs.send(new ExtensionRequest("chat-private-to", params));
+    }
 
 }
 

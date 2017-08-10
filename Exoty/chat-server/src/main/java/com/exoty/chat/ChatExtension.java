@@ -1,21 +1,35 @@
 package com.exoty.chat;
 
-import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
-public class ChatExtension extends SFSExtension{
+public class ChatExtension extends SFSExtension {
+
+    public static final String[] BAD_WORDS = {
+            "fuck", "bitch", "cock", "dick", "shit", "dm", "vkl",
+    };
+
+    public static final String filterChat(String s) {
+        Objects.requireNonNull(s);
+        for (String bad : BAD_WORDS) {
+            s = s.replaceAll(bad, "***");
+        }
+        return s;
+    }
+
     private List<User> users;
 
     public void init() {
@@ -25,51 +39,51 @@ public class ChatExtension extends SFSExtension{
         addEventHandler(SFSEventType.USER_JOIN_ZONE, new ZoneEventHandler());
         addEventHandler(SFSEventType.USER_DISCONNECT, new ZoneEventHandler());
         addRequestHandler("chat-to", new ChatReqHandler());
-        addRequestHandler("create-room", new BaseClientRequestHandler() {
-            @Override
-            public void handleClientRequest(User user, ISFSObject params) {
-                String name = params.getUtfString("name");
-                makeRoom(user, name);
-            }
-        });
-    }
-
-    void makeRoom(User user, String nameRoom)
-    {
-        CreateRoomSettings settings = new CreateRoomSettings();
-        settings.setName("room");
-        settings.setMaxUsers(20);
-        try {
-            getApi().createRoom(getParentZone(), settings, user);
-        } catch (SFSCreateRoomException e) {
-            trace(e);
-        }
+        addRequestHandler("chat-private-to", new ChatPrivateHandler());
     }
 
 
-    public class ChatReqHandler extends BaseClientRequestHandler
-    {
+    public class ChatReqHandler extends BaseClientRequestHandler {
         @Override
-        public void handleClientRequest(User sender, ISFSObject params)
-        {
-            String str = params.getUtfString("msg");
-            params.putUtfString("from", sender.getName());
-            trace("request: ", "{ chat: ", str, "}");
-            send("chat-from", params, users);
+        public void handleClientRequest(User sender, ISFSObject params) {
+            String msg = params.getUtfString("msg");
+
+            ISFSObject cmd = new SFSObject();
+            cmd.putUtfString("msg", filterChat(msg));
+            cmd.putUtfString("from", sender.getName());
+
+            trace("request: ", "{ chat: ", msg, "}");
+            send("chat-from", cmd, users);
         }
     }
 
+    public class ChatPrivateHandler extends BaseClientRequestHandler {
 
+        @Override
+        public void handleClientRequest(User user, ISFSObject params) {
+            String to = params.getUtfString("to");
+            String msg = params.getUtfString("msg");
+            Objects.requireNonNull(to);
+            Objects.requireNonNull(msg);
+            User u = this.getApi().getUserByName(to);
+            if (u == null) {
+                ChatExtension.this.trace(String.format("user '%s' is null", to));
+            } else {
+                ISFSObject cmd = new SFSObject();
+                cmd.putUtfString("msg", filterChat(msg));
+                cmd.putUtfString("from", user.getName());
+                send("chat-private-from", cmd, u);
+            }
+        }
+    }
 
-    public class ZoneEventHandler extends BaseServerEventHandler
-    {
+    public class ZoneEventHandler extends BaseServerEventHandler {
         public ZoneEventHandler() {
             super();
         }
 
         @Override
-        public void handleServerEvent(ISFSEvent event) throws SFSException
-        {
+        public void handleServerEvent(ISFSEvent event) throws SFSException {
             User user = (User) event.getParameter(SFSEventParam.USER);
             trace("handleServerEvent: " + event.getType());
             switch (event.getType()) {
