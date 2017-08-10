@@ -65,6 +65,11 @@ public class App
                     connector.sendPrivateMsg(username, msg);
                     break;
 
+                case"/user-list":
+                    connector.sendUserList();
+                    break;
+
+                //=============
                 case "/create-room":
                     System.out.print("type room name: ");
                     String name = scanner.nextLine();
@@ -104,6 +109,7 @@ public class App
         System.err.println("/logout : logout");
         System.err.println("/chat : send msg");
         System.err.println("/chat-to : send Private msg");
+        System.err.println("/user-list : list all user online");
 
         System.err.println();
         System.err.println("/-------");

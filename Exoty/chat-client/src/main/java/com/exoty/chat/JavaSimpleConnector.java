@@ -20,7 +20,9 @@ import sfs2x.client.requests.LoginRequest;
 import sfs2x.client.requests.LogoutRequest;
 import sfs2x.client.util.ConfigData;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Basic SFS2X client, performing connection and login to a 'localhost' server
@@ -121,8 +123,17 @@ public class JavaSimpleConnector implements IEventListener {
                 from = params.getUtfString("from");
                 System.out.println(String.format("from '%s' [private]: %s", from, msg));
                 break;
+            case "chat-private-from-exception":
+                System.err.println("Exception when send Private msg: " + params.getUtfString("error"));
+                break;
+            case "user-list":
+                System.out.println("--- List user: ");
+                params.getUtfStringArray("users").stream().forEach(System.out::println);
+                System.out.println("------");
+                break;
             default:
                 System.out.println("Receive msg with UNKNOWN cmd = " + cmd);
+                break;
         }
     }
 
@@ -157,6 +168,11 @@ public class JavaSimpleConnector implements IEventListener {
         params.putUtfString("to", username);
         params.putUtfString("msg", msg);
         sfs.send(new ExtensionRequest("chat-private-to", params));
+    }
+
+    public void sendUserList() {
+        SFSObject params = new SFSObject();
+        sfs.send(new ExtensionRequest("user-list", params));
     }
 
 }

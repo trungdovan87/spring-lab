@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ChatExtension extends SFSExtension {
 
@@ -40,6 +41,7 @@ public class ChatExtension extends SFSExtension {
         addEventHandler(SFSEventType.USER_DISCONNECT, new ZoneEventHandler());
         addRequestHandler("chat-to", new ChatReqHandler());
         addRequestHandler("chat-private-to", new ChatPrivateHandler());
+        addRequestHandler("user-list", new UserListReqHandler());
     }
 
 
@@ -68,6 +70,9 @@ public class ChatExtension extends SFSExtension {
             User u = this.getApi().getUserByName(to);
             if (u == null) {
                 ChatExtension.this.trace(String.format("user '%s' is null", to));
+                ISFSObject cmd = new SFSObject();
+                cmd.putUtfString("error", String.format("User '%s' NOT online", to));
+                send("chat-private-from-exception", cmd, user);
             } else {
                 ISFSObject cmd = new SFSObject();
                 cmd.putUtfString("msg", filterChat(msg));
@@ -76,6 +81,17 @@ public class ChatExtension extends SFSExtension {
             }
         }
     }
+
+    public class UserListReqHandler extends BaseClientRequestHandler {
+        @Override
+        public void handleClientRequest(User sender, ISFSObject params) {
+            ISFSObject cmd = new SFSObject();
+            List<String> userList = users.stream().map(u -> u.getName()).collect(Collectors.toList());
+            cmd.putUtfStringArray("users", userList);
+            send("user-list", cmd, users);
+        }
+    }
+
 
     public class ZoneEventHandler extends BaseServerEventHandler {
         public ZoneEventHandler() {
