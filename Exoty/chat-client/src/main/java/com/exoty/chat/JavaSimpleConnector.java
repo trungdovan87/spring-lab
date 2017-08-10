@@ -14,28 +14,20 @@ import sfs2x.client.SmartFox;
 import sfs2x.client.core.BaseEvent;
 import sfs2x.client.core.IEventListener;
 import sfs2x.client.core.SFSEvent;
-import sfs2x.client.requests.CreateRoomRequest;
 import sfs2x.client.requests.ExtensionRequest;
 import sfs2x.client.requests.LoginRequest;
 import sfs2x.client.requests.LogoutRequest;
 import sfs2x.client.util.ConfigData;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  * Basic SFS2X client, performing connection and login to a 'localhost' server
  */
 public class JavaSimpleConnector implements IEventListener {
-    public SmartFox getSfs() {
-        return sfs;
-    }
-
     private final SmartFox sfs;
     private final ConfigData cfg;
-
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     public JavaSimpleConnector() {
@@ -65,6 +57,9 @@ public class JavaSimpleConnector implements IEventListener {
         cfg.setZone("Chat");
     }
 
+    public SmartFox getSfs() {
+        return sfs;
+    }
 
     /**
      * This handles the events coming from the server
@@ -91,6 +86,8 @@ public class JavaSimpleConnector implements IEventListener {
                 break;
             case SFSEvent.LOGIN_ERROR:
                 //log.warn("Login error:  " + evt.getArguments().get("errorMessage"));
+                System.err.println("Login error:  " + evt.getArguments().get("errorMessage"));
+                System.err.println("please: login again with command: '/login'");
                 break;
             case SFSEvent.LOGOUT:
                 System.err.println("Logout!!");
@@ -167,8 +164,8 @@ public class JavaSimpleConnector implements IEventListener {
         return sfs.isConnected();
     }
 
-    public void login(String username) {
-        sfs.send(new LoginRequest(username, ""));
+    public void login(String username, String password) {
+        sfs.send(new LoginRequest(username, password));
     }
 
     public void logout() {

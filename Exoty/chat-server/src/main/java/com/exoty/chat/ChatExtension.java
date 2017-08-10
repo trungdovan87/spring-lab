@@ -1,16 +1,24 @@
 package com.exoty.chat;
 
+import com.smartfoxserver.bitswarm.sessions.Session;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.data.*;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.exceptions.SFSErrorCode;
+import com.smartfoxserver.v2.exceptions.SFSErrorData;
 import com.smartfoxserver.v2.exceptions.SFSException;
+import com.smartfoxserver.v2.exceptions.SFSLoginException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
@@ -19,6 +27,8 @@ public class ChatExtension extends SFSExtension {
     public static final String[] BAD_WORDS = {
             "fuck", "bitch", "cock", "dick", "shit", "dm", "vkl",
     };
+    private List<User> allUsers;
+    private ConcurrentLinkedDeque<HistoryChat> history;
 
     public static final String filterChat(String s) {
         Objects.requireNonNull(s);
@@ -28,21 +38,17 @@ public class ChatExtension extends SFSExtension {
         return s;
     }
 
-    private List<User> users;
-
-    private ConcurrentLinkedDeque<HistoryChat> history;
-
     public void init() {
         trace("Init Chat Extension");
-//        addEventHandler(SFSEventType.USER_JOIN_ZONE, ZoneEventHandler.class);
-        users = Collections.synchronizedList(new ArrayList<>());
+        allUsers = Collections.synchronizedList(new ArrayList<>());
         history = new ConcurrentLinkedDeque<>();
 
         ZoneEventHandler zoneEventHandler = new ZoneEventHandler();
         addEventHandler(SFSEventType.USER_JOIN_ZONE, zoneEventHandler);
         addEventHandler(SFSEventType.USER_DISCONNECT, zoneEventHandler);
         addEventHandler(SFSEventType.USER_LOGOUT, zoneEventHandler);
-        addEventHandler(SFSEventType.USER_LOGIN, zoneEventHandler);
+
+        addEventHandler(SFSEventType.USER_LOGIN, new LoginEventHandler());
 
         addRequestHandler("chat-to", new ChatReqHandler());
         addRequestHandler("chat-private-to", new ChatPrivateHandler());
@@ -81,7 +87,7 @@ public class ChatExtension extends SFSExtension {
             cmd.putUtfString("msg", msg);
             cmd.putUtfString("from", sender.getName());
 
-            send("chat-from", cmd, users);
+            send("chat-from", cmd, allUsers);
         }
     }
 
@@ -112,9 +118,34 @@ public class ChatExtension extends SFSExtension {
         @Override
         public void handleClientRequest(User sender, ISFSObject params) {
             ISFSObject cmd = new SFSObject();
-            List<String> userList = users.stream().map(u -> u.getName()).collect(Collectors.toList());
+            List<String> userList = allUsers.stream().map(u -> u.getName()).collect(Collectors.toList());
             cmd.putUtfStringArray("users", userList);
-            send("user-list", cmd, users);
+            send("user-list", cmd, sender);
+        }
+    }
+
+    public class LoginEventHandler extends BaseServerEventHandler {
+        @Override
+        public void handleServerEvent(ISFSEvent event) throws SFSException {
+            Session session = (Session) event.getParameter(SFSEventParam.SESSION);
+            String username = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
+            String encryptedPass = (String) event.getParameter(SFSEventParam.LOGIN_PASSWORD);
+            Objects.requireNonNull(session);
+
+
+            trace("user LOGIN: ");
+            trace("username: " + username);
+            trace("password: " + encryptedPass);
+
+            if (!getApi().checkSecurePassword(session, "123", encryptedPass)) {
+
+                // Create the error code to send to the client
+                SFSErrorData errData = new SFSErrorData(SFSErrorCode.LOGIN_BAD_PASSWORD);
+                errData.addParameter(encryptedPass);
+
+                // Fire a Login exception
+                throw new SFSLoginException("Bad Password!", errData);
+            }
         }
     }
 
@@ -127,24 +158,19 @@ public class ChatExtension extends SFSExtension {
             trace("handleServerEvent: " + event.getType());
             switch (event.getType()) {
                 case USER_JOIN_ZONE:
-                    users.add(user);
+
+                    allUsers.add(user);
                     trace("Welcome new user JOIN_ZONE: " + user.getName());
                     sendHistoryChat(user);
-//                    sendHistoryChat(user);
-                    break;
-                case USER_LOGIN:
-                    users.add(user);
-                    trace("Welcome new user LOGIN: " + user.getName());
-
                     break;
 
                 case USER_LOGOUT:
-                    users.remove(user);
+                    allUsers.remove(user);
                     trace("Logout user: " + user.getName());
                     break;
 
                 case USER_DISCONNECT:
-                    users.remove(user);
+                    allUsers.remove(user);
                     trace("Disconnect user: " + user.getName());
                     break;
             }

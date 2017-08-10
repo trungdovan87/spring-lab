@@ -1,10 +1,7 @@
 package com.exoty.chat;
 
-import com.smartfoxserver.v2.entities.data.SFSObject;
-import sfs2x.client.SmartFox;
 import sfs2x.client.entities.Room;
 import sfs2x.client.requests.CreateRoomRequest;
-import sfs2x.client.requests.ExtensionRequest;
 import sfs2x.client.requests.JoinRoomRequest;
 import sfs2x.client.requests.RoomSettings;
 
@@ -13,25 +10,30 @@ import java.util.Scanner;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        JavaSimpleConnector connector = new JavaSimpleConnector();
-        connector.connect();
+public class App {
+    private static JavaSimpleConnector connector = new JavaSimpleConnector();
+    private static Scanner scanner = new Scanner(System.in);
 
-        Scanner scanner = new Scanner(System.in);
-        String input;
-
-        System.out.println("type '/h' for help");
+    public static void login() {
         System.out.print("Type your username: ");
         String username = scanner.nextLine().trim();
-        connector.login(username);
+
+        System.out.println("Default Password for all user: 123");
+        System.out.print("Type your password: ");
+        String password = scanner.nextLine().trim();
+
+        connector.login(username, password);
+    }
+
+    public static void main(String[] args) {
+        connector.connect();
+        System.out.println("type '/h' for help");
+
+        login();
 
         while (true) {
-            input = scanner.nextLine();
+            String input = scanner.nextLine();
             input = input.trim();
             switch (input) {
                 case "/h":
@@ -44,9 +46,7 @@ public class App
                     connector.disconnect();
                     break;
                 case "/login":
-                    System.out.print("Type your username: ");
-                    username = scanner.nextLine().trim();
-                    connector.login(username);
+                    login();
                     break;
                 case "/logout":
                     connector.logout();
@@ -59,13 +59,13 @@ public class App
 
                 case "/chat-to":
                     System.out.print("send to username: ");
-                    username = scanner.nextLine();
+                    String username = scanner.nextLine();
                     System.out.print("type msg        : ");
                     msg = scanner.nextLine();
                     connector.sendPrivateMsg(username, msg);
                     break;
 
-                case"/user-list":
+                case "/user-list":
                     connector.sendUserList();
                     break;
 
@@ -79,7 +79,7 @@ public class App
                 case "/list-room":
                     List<Room> rooms = connector.getSfs().getRoomList();
                     System.err.println("size of rooms: " + rooms.size());
-                    rooms.forEach(room-> {
+                    rooms.forEach(room -> {
                         System.err.println("id room: " + room.getGroupId());
                         System.err.println("name room: " + room.getName());
                     });
