@@ -15,10 +15,7 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
@@ -37,7 +34,7 @@ public class ChatExtension extends SFSExtension {
     }
 
     private List<User> allUsers;
-    private ConcurrentLinkedDeque<HistoryChat> history;
+    private Deque<HistoryChat> history;
 
 
     public void init() {
