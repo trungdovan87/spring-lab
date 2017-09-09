@@ -5,7 +5,9 @@ import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSErrorData;
@@ -63,14 +65,11 @@ public class ChatExtension extends SFSExtension {
 
     private void sendHistoryChat(User user) {
         ISFSObject cmd = new SFSObject();
-        cmd.putInt("size", history.size());
-        int i = 0;
-        for (HistoryChat chat : history) {
-            cmd.putUtfString("from" + i, chat.getFrom());
-            cmd.putUtfString("msg" + i, chat.getMsg());
-            i++;
-        }
-
+        ISFSArray chats = new SFSArray();
+        history.forEach(chat -> {
+            chats.addSFSObject(chat.toSFSObject());
+        });
+        cmd.putSFSArray("chats", chats);
         send("history-chat", cmd, user);
     }
 

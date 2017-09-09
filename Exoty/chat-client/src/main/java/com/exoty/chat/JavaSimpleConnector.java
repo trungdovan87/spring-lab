@@ -5,6 +5,7 @@
  */
 package com.exoty.chat;
 
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
@@ -140,18 +141,17 @@ public class JavaSimpleConnector implements IEventListener {
     }
 
     private void historyChat(ISFSObject params) {
-        int size = params.getInt("size");
-        if (size == 0) {
+        ISFSArray chats = params.getSFSArray("chats");
+        if (chats.size() == 0) {
             System.err.println("--- NO chat in history!!!");
             return;
         }
-
         System.err.println("--- History Chat:");
-        IntStream.range(0, size).forEach(i -> {
-            String from = params.getUtfString("from" + i);
-            String msg = params.getUtfString("msg" + i);
+        IntStream.range(0, chats.size()).forEach(i -> {
+            ISFSObject obj = chats.getSFSObject(i);
+            String from = obj.getUtfString("from");
+            String msg = obj.getUtfString("msg");
             System.err.println(String.format("from '%s' [history]: %s", from, msg));
-
         });
     }
 
